@@ -1,0 +1,91 @@
+﻿@page
+@model UI.Pages.RSSFeed.IndexModel
+
+
+@functions {
+    public bool isClicked = false;
+    public bool[] arr;
+
+    public bool Click(int count)
+    {
+        bool currentValue = arr[count];
+
+        isClicked = !currentValue;
+
+        arr[count] = isClicked;
+
+        return isClicked;
+    }
+    public string srcImage(string str)
+    {
+        string[] arr = str.Split(' ');
+        string temp=arr[1].Substring(5);
+        string temp2 = temp.Substring(0,temp.Length - 1);
+        return temp2;
+    }
+}
+@{
+    int counter = 0;
+    arr = new bool[Model.RSSFeed.Count];
+}
+<link href="./css/site.css" rel="stylesheet">
+<script src="./js/site.js" defer></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+<h1>Google news</h1>
+
+@if (Model.RSSFeed != null && Model.RSSFeed.Any())
+{
+    <ul>
+        @foreach (var item in Model.RSSFeed)
+        {
+            <li>
+                <div class="flex-container">
+                    <div class="news-item" data-link="@item.Links[0].Uri.AbsoluteUri">
+                        <a href="#" class="feed-link">@item.Title.Text</a><br />
+                    </div>
+                    <div class="post not-post">
+                        <h1>@item.Title.Text</h1>
+                        <div>
+                            <img src="@srcImage(item.Summary.Text)" />
+                            <p>@item.Summary.Text</p>
+                            <a href="@item.Links[0].Uri.AbsoluteUri" id="green">Read More>></a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No RSS feed items available.</p>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.feed-link').click(function (event) {
+                event.preventDefault();
+
+                var newsItem = $(this).closest('.news-item');
+                var postDiv = newsItem.next('.post');
+
+                $.ajax({
+                    
+                    data: { link: newsItem.data('link') },
+                    success: function (response) {
+                        if (response.isPost) {
+                            postDiv.removeClass('not-post').addClass('post');
+                        } else {
+                            postDiv.removeClass('post').addClass('not-post');
+                        }
+                    },
+                    error: function () {
+                        console.error('Error in AJAX request');
+                    }
+                });
+            });
+        });
+    </script>
+}
